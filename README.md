@@ -4,12 +4,15 @@
 [![rank](https://make.fun/badge/gta6-twitch-ccu-forecast-01/z21001/gta6-twitch-forecast/rank.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-twitch-ccu-forecast-01)
 [![reward](https://make.fun/badge/gta6-twitch-ccu-forecast-01/z21001/gta6-twitch-forecast/reward.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-twitch-ccu-forecast-01)
 
-Forecasts Grand Theft Auto VI's concurrent Twitch viewers for hours 2 to 24 of its release day from hour 1's count. `model.ts` pools the release-day shapes (log-ratios to hour 1) of past big launches, weighting the ones that unlocked like GTA VI (consoles at midnight local, rolling round the world) and whose run-up into hour 1 looked alike, and writes five log-normal quantiles per hour with a robust spread. `tools/evaluate.ts` scores it leave-one-out on the past launches with the contest's pinball loss (rolling launches: 0.297 vs the persistence baseline's 0.363); `tools/tune.ts` is the grid search behind its settings.
+Forecasts Grand Theft Auto VI's Twitch viewers for each hour of release day (hours 2 to 24) as five quantiles, from the first hour's count. Every past launch in the case's comparables gives the log-ratio of each release-day hour to its hour 1. The ratios are pooled per hour with weights: by data tier (early-access launches count about a third, weak ones less, GTA VI's own pre-release history not at all), by unlock style (rolling midnight-local launches like GTA VI count 3x, single global unlocks almost nothing), and by how closely each launch's run-up into hour 1 matches the case's own. The centre is a median/mean blend; the spread is a robust MAD with a small-sample correction and a drift term that grows with the hour. With fewer than 3 analogs it falls back to persistence. Node 22, standard library only, deterministic.
+
+`tools/evaluate.ts` scores the method leave-one-out on the comparables (each launch forecast from the others) against the house persistence baseline. On p00's 38 comparables the rolling midnight-local launches score a pinball loss of 0.294 against the baseline's 0.357, and all launches 0.808 against 0.930.
 
 ## Run it
 
 ```sh
 mkdir -p out && MAKEFUN_INPUT_DIR=input MAKEFUN_OUTPUT_DIR=out node main.ts
+node tools/evaluate.ts input/p00.in
 ```
 
 ---
